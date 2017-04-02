@@ -13,24 +13,26 @@ summedII = 12; % 6 + 6.3 ~= 12 days
 
 
 %%initializations
-trueInfected = zeroes(length(cummulativeInfected));
-trueExposed = zeroes(length(cummulativeInfected));
-trueRecovered = zeroes(length(cummulativeInfected));
+trueInfected = zeros(length(cummulativeInfected), 1);
+trueExposed = zeros(length(cummulativeInfected), 1);
+trueRecovered = zeros(length(cummulativeInfected), 1);
 
 for i = 1:6
     trueInfected(i) = cummulativeInfected(i);
     %%cannot properly calculate here, so using the original cummulative
 end
 for i = 7:12
-    trueInfected(i) = 
+    trueInfected(i) = cummulativeInfected(i);
+    trueExposed(i - daysIncubation) = trueInfected(i);
 end
 
 
 for i = 13:length(cummulativeInfected)
-    trueInfected(i) = cummulativeInfected(i) - cummulativeInfected(i - summedII);
+    trueInfected(i) = cummulativeInfected(i) - cummulativeInfected(i - daysInfectious);
     %%we assume that after summedII days, infected individuals leave
     %%population for recovered subpopulation
-    trueInfected(i) = trueInfected(i) - cummulativeDead(i);
+    %%trueInfected(i) = trueInfected(i) - cummulativeDead(i) - cummulativeDead(i - daysInfectious);
+    %%TODO:take into account dead
     %%we then remove those who have died from infected count
     trueExposed(i - daysIncubation) = trueInfected(i) - trueInfected(i - daysIncubation);
     
@@ -41,5 +43,6 @@ for i = 13:length(cummulativeInfected)
     
     %%TODO find a way to incorporate death into trueExposed statistic, as
     %%well as prevent it from being so forward leaning
-    trueRecovered(i - daysInfectious) = trueInfected(i);
+    trueRecovered(i) = trueInfected(i - daysInfectious);
+    
 end

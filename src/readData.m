@@ -2,6 +2,7 @@ function[fittedCases, fittedDeaths, casesError, deathsError] = readData(enGraph)
 %@param enGraph represents if we wanna graph the things or not
 %@return fittedCases represents the number of cases data fitted to a
 %piecewise function (j, i) where i is country number, j is index
+%% Order of vectors: Guinea, Liberia, Sierra Leone
 %@return represents the number of deaths fitted to a piecewise function
 %@return casesError representing summed squared errors from cases fit
 %@return deathsError representing summed squared errors form deaths fit
@@ -13,9 +14,10 @@ close all
 load('EbolaDataFiles.mat');
 
 %Drawn from 2013 data, this is total population data
-nSierraLeone = 6.092 * 10 ^ 6;
+
 nGuinea = 11.75 * 10 ^ 6;
 nLiberia = 4.3 * 10 ^ 6;
+nSierraLeone = 6.092 * 10 ^ 6;
 
 %initialize variables
 casesDatasets = [TotalCasesGuinea, TotalCasesLiberia, TotalCasesSierraLeone];
