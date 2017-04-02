@@ -65,13 +65,16 @@ for i = 1:length(casesDatasets(1,:))
         ylabel('Number Of Cases');
     end
     %use fit functions to generate new points
-    for j = 1:length(TotalCasesCountry)
-        if (j < length(TotalCasesCountry)/2)
-            fittedCases(j,i) = (firstHalfCases(DaysSinceStart(j)) + TotalCasesCountry(j))/2;
+    lastDay = DaysSinceStart(length(DaysSinceStart));
+    midDay = DaysSinceStart(length(DaysSinceStart)/2);
+    for j = 1:lastDay;
+        if (j < midDay)
+            fittedCases(j,i) = (firstHalfCases(j));
         else
-            fittedCases(j,i) = (secondHalfCases(DaysSinceStart(j)) + TotalCasesCountry(j))/2;
+            fittedCases(j,i) = (secondHalfCases(j));
         end
-        casesError = casesError + (fittedCases(j,i) - TotalCasesCountry(j))^2;
+        %casesError = casesError + (fittedCases(j,i) - TotalCasesCountry(j))^2;
+        %TODO: fix the casesError datapoint
     end
     
     
@@ -105,13 +108,14 @@ for i = 1:length(casesDatasets(1,:))
         ylabel('Number Of Cases');
     end
     %use fit functions to generate new points
-    for j = 1:length(TotalDeathsCountry)
-        if (j < length(TotalDeathsCountry)/2)
-            fittedDeaths(j,i) = (firstHalfDeaths(DaysSinceStart(j)) + TotalDeathsCountry(j))/2;
+    for j = 1:lastDay
+        if (j < midDay)
+            fittedDeaths(j,i) = (firstHalfDeaths(j));
         else
-            fittedDeaths(j,i) = (secondHalfDeaths(DaysSinceStart(j)) + TotalDeathsCountry(j))/2;
+            fittedDeaths(j,i) = (secondHalfDeaths(j));
         end
-        deathsError = deathsError + (fittedDeaths(j,i) - TotalDeathsCountry(j))^2;
+        %%deathsError = deathsError + (fittedDeaths(j,i) - TotalDeathsCountry(j))^2;
+        %% TODO: fixd deathsError
     end
     
     
