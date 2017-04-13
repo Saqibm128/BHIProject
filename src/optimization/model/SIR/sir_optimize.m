@@ -5,4 +5,7 @@ function [alpha, beta] = sir_optimize(dataInfected, dataRecovered, initS)
     newErrorFunct = @(a)errorSIR(a, dataInfected, dataRecovered, init);
     options = optimset('MaxIter',200);
     [alpha, beta] = fminsearch(newErrorFunct, [1 * 10^-6, 1* 10^-6], options);
+    [t, x] = instantiateSIR(alpha, beta, init, length(dataInfected));
+    figure();
+    plot(t, x);
 end
