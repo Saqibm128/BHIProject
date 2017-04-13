@@ -1,0 +1,19 @@
+<PAMDataset>
+  <PAMRasterBand band="1">
+    <ColorInterp>Gray</ColorInterp>
+    <CategoryNames>
+      <Category>under 22</Category>
+      <Category>22 - 68</Category>
+      <Category>68 - 144</Category>
+      <Category>144 - 278</Category>
+      <Category>278 - 562</Category>
+      <Category>over 562</Category>
+    </CategoryNames>
+    <Metadata>
+      <MDI key="STATISTICS_MAXIMUM">2294</MDI>
+      <MDI key="STATISTICS_MEAN">18.275342507991</MDI>
+      <MDI key="STATISTICS_MINIMUM">0</MDI>
+      <MDI key="STATISTICS_STDDEV">42.873116883414</MDI>
+    </Metadata>
+  </PAMRasterBand>
+</PAMDataset>
