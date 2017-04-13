@@ -1,4 +1,4 @@
-    function dSIR = model(t,SIR)
+    function dSIR = SIRModel(t,SIR, alpha, beta)
         
         dSIR(1) = -1.*alpha.*SIR(1).*SIR(2);
         dSIR(2) = alpha .* SIR(1).* SIR(2) - 1 .* beta .* SIR(2);
