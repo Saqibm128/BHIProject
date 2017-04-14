@@ -5,12 +5,17 @@ nGuinea = 11.75 * 10 ^ 6;
 nLiberia = 4.3 * 10 ^ 6;
 nSierraLeone = 6.092 * 10 ^ 6;
 
+%%to change later
+nGuinea = 30000;
+nLiberia = 30000;
+nSierraLeone = 30000;
+
 [fittedCases, fittedDeaths, casesError, deathsError] = readData(false);
 fittedCasesGuinea = (fittedCases(:,1) ./ nGuinea) * 100;
 fittedDeathsGuinea = (fittedDeaths(:,1)./ nGuinea) * 100;
 [trueInfected, trueExposed, trueRecovered] = interpolateTrueInfected(fittedCasesGuinea, fittedDeathsGuinea);
 
-enGraph = false;
+enGraph = true;
 
 %%TODO:Sanity check with interpolated data
 

@@ -9,32 +9,38 @@ function [trueInfected, trueExposed, trueRecovered] = interpolateTrueInfected(cu
 
 daysIncubation = 6; %mean incubation as per CDC paper (actually ~6.3 days)
 daysInfectious = 6; %mean data as per CDC paper
-summedII = 12; % 6 + 6.3 ~= 12 days
+summedII = daysIncubation + daysInfectious; % 6 + 6.3 ~= 12 days
 
 
 %%initializations
 trueInfected = zeros(length(cummulativeInfected), 1);
 trueExposed = zeros(length(cummulativeInfected), 1);
 trueRecovered = zeros(length(cummulativeInfected), 1);
-
-for i = 1:6
+i = 1;
+%before data is useful
+while cummulativeInfected(i) == 0 || cummulativeInfected(i + 1) == 0
     trueInfected(i) = cummulativeInfected(i);
+    i = i + 1;
     %%cannot properly calculate here, so using the original cummulative
 end
-for i = 7:12
-    trueInfected(i) = cummulativeInfected(i);
-    trueExposed(i - daysIncubation) = trueInfected(i);
+%we cannot easily calculate anything useful here
+for j = i :i+daysIncubation
+    trueInfected(j) = cummulativeInfected(j);
+end
+for j = i + daysIncubation + 1:i+summedII
+    trueInfected(j) = cummulativeInfected(j);
+    trueExposed(j - daysIncubation) = trueInfected(j);
 end
 
-
-for i = 13:length(cummulativeInfected)
-    trueInfected(i) = cummulativeInfected(i) - cummulativeInfected(i - daysInfectious);
+%%attempt to interpolate data
+for j = (i + summedII + 1):length(cummulativeInfected)
+    trueInfected(j) = cummulativeInfected(j) - cummulativeInfected(j - daysInfectious);
     %%we assume that after summedII days, infected individuals leave
     %%population for recovered subpopulation
     %%trueInfected(i) = trueInfected(i) - cummulativeDead(i) - cummulativeDead(i - daysInfectious);
     %%TODO:take into account dead
     %%we then remove those who have died from infected count
-    trueExposed(i - daysIncubation) = trueInfected(i) - trueInfected(i - daysIncubation);
+    trueExposed(j - daysIncubation) = trueInfected(j) - trueInfected(j - daysIncubation);
     
     %%we find change in num infected over an incubation period and assume
     %%that it reflects the true exposed. In reality, this skews distribution forward a

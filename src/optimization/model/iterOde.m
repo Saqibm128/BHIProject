@@ -18,7 +18,7 @@ for i = 2:maxNum
     tempX = zeros(numSplits + 1, lengthOfX); %holds info for split monte carlo
     tempX(1,:) = x(i - 1,:); %initialize tempX with last value
     for j = 1:numSplits
-        dX = funct(i, tempX(j,:));
+        dX = funct(i + j * splitInterval, tempX(j,:));
         tempX(j + 1, :) = tempX(j,:) + dX .* splitInterval;
     end
     x(i, :) = tempX(numSplits + 1, :);

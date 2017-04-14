@@ -34,10 +34,10 @@ deathsError = 0;
 for i = 1:length(casesDatasets(1,:))
     %initialize the datasets we wish to use this iteration
     TotalCasesCountry = casesDatasets(:,i); %Stores the current country
-    TotalDeathsCountry = deathsDatasets(:,1);
+    TotalDeathsCountry = deathsDatasets(:,i);
     
     %This is exponential fitting, along with graph to see how well it works out
-    x = 1:length(DaysSinceStart)/2;
+    x = 1:floor(length(DaysSinceStart)/2);
     firstHalfCases = fit(DaysSinceStart(x), TotalCasesCountry(x),'exp1');
 
     if(enGraph)
@@ -53,7 +53,7 @@ for i = 1:length(casesDatasets(1,:))
 
 
     %This is a polynomial curve fitting and plotting
-    x = length(DaysSinceStart)/2 + 1:length(DaysSinceStart);
+    x = (floor(length(DaysSinceStart)/2) + 1):length(DaysSinceStart);
     secondHalfCases = fit(DaysSinceStart(x), TotalCasesCountry(x), 'poly5');
     if(enGraph)
         figure();
@@ -80,7 +80,7 @@ for i = 1:length(casesDatasets(1,:))
     end
     
     
-    x = 1:length(DaysSinceStart)/2;
+    x = 1:floor(length(DaysSinceStart)/2);
     firstHalfDeaths = fit(DaysSinceStart(x), TotalDeathsCountry(x),'exp1');
 
     if(enGraph)
@@ -96,7 +96,7 @@ for i = 1:length(casesDatasets(1,:))
 
 
     %This is a polynomial curve fitting and plotting
-    x = length(DaysSinceStart)/2 + 1:length(DaysSinceStart);
+    x = floor(length(DaysSinceStart)/2 + 1):length(DaysSinceStart);
     secondHalfDeaths = fit(DaysSinceStart(x), TotalDeathsCountry(x), 'poly5');
     if(enGraph)
         figure();
