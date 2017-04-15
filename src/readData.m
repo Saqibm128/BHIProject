@@ -13,6 +13,8 @@ close all
 %   dataset
 load('EbolaDataFiles.mat');
 
+%%function definiton for linear interpolation
+
 %Drawn from 2013 data, this is total population data
 
 nGuinea = 11.75 * 10 ^ 6;
