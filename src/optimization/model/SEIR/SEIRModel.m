@@ -1,8 +1,4 @@
-<<<<<<< HEAD
   function dSEIR = SEIRModel(t,SEIR, alpha, beta, gamma)
-        
-=======
-  function dSEIR = SEIRModel(t,SEIR, beta, epsilon, gamma)
   %%SEIR is previous iteration
   %%t is required arg
   %%beta is transfer to exposed from S
@@ -13,5 +9,4 @@
   dSEIR(2) = -1 .* dSEIR(1) - epsilon .* SEIR(2); %%dE/dt = b[s][i] - epsilon[e] = -dS/dt - eps * [e]
   dSEIR(3) = epsilon .* SEIR(2) - gamma .* SEIR(3); %%dI/dt = epsilon [e] - gamma [i]
   dSEIR(4) = gamma .* SEIR(3); %% dR/dt = gamma [i]
->>>>>>> SIR
   end
