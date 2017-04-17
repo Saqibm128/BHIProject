@@ -147,18 +147,13 @@ end
 function GraphSIR_Callback(hObject, eventdata, handles)
 h = handles.output;
 fitCases = h.UserData.transformedCases;
-fitDeaths = h.UserData.transformedDeaths;
 alphaBetaVal = [];
-init = [];
 if (h.UserData.useEntirePop)
     initGuinea = [h.UserData.nGuinea, fitCases(1), 0];
     [alphaBetaVal, error] = findOptAlphaBeta(fittedCasesGuinea, initGuinea);
 else
-    pop = str2double(get(handles.TotalPopulation, 'String'));
-    initGuinea = [pop, fitCases(1), 0];
-    [alphaBetaVal, error] = findOptAlphaBeta(fittedCasesGuinea, initGuinea);
+    handles.TotalPopulation
 end
-[t, x] = instantiateSIR(alphaBetaVal(1),alphaBetaVal(2), init, length(dataInfected));
 
 
 % hObject    handle to GraphSIR (see GCBO)

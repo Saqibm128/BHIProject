@@ -1,4 +1,4 @@
-%%Main script to analyze data
+%%Main script to analyze data with SIR model
 
 %%initialize and read data
 nGuinea = 11.75 * 10 ^ 6;
@@ -26,7 +26,7 @@ disp('')
 
 %Liberia
 initLiberia = [nLiberia, 1, 0];
-[alphaBetaVal, error] = findOptAlphaBeta(trueInfected, initLiberia);
+[alphaBetaVal, error] = findOptAlphaBeta(fittedCasesLiberia, initLiberia);
 disp('alpha Liberia, beta liberia')
 disp(alphaBetaVal)
 disp('error')
@@ -36,7 +36,7 @@ disp(error)
 [trueInfected, trueExposed, trueRecovered] = interpolateTrueInfected(fittedCases(:, 3), fittedDeaths(:, 3));
 
 init = [nSierraLeone, 1, 0];
-[alphaBetaVal, error] = findOptAlphaBeta(trueInfected, init);
+[alphaBetaVal, error] = findOptAlphaBeta(fittedCasesSierraLeone, init);
 disp('alpha Sierra Leone, beta Sierra Leone')
 disp(alphaBetaVal)
 disp('error Sierra Leone')

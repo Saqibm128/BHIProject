@@ -17,9 +17,7 @@ load('EbolaDataFiles.mat');
 
 %Drawn from 2013 data, this is total population data
 
-nGuinea = 11.75 * 10 ^ 6;
-nLiberia = 4.3 * 10 ^ 6;
-nSierraLeone = 6.092 * 10 ^ 6;
+
 
 %initialize variables
 casesDatasets = [TotalCasesGuinea, TotalCasesLiberia, TotalCasesSierraLeone];
