@@ -23,7 +23,7 @@ function varargout = EbolaModeling(varargin)
 
 % Edit the above text to modify the response to help EbolaModeling
 
-% Last Modified by GUIDE v2.5 17-Apr-2017 15:27:44
+% Last Modified by GUIDE v2.5 18-Apr-2017 15:57:16
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -72,6 +72,8 @@ hObject.UserData.useEntirePop = true;
 hObject.UserData.nGuinea = 11.75 * 10 ^ 6;
 hObject.UserData.nLiberia = 4.3 * 10 ^ 6;
 hObject.UserData.nSierraLeone = 6.092 * 10 ^ 6;
+hObject.UserData.nCountry = 11.75 * 10 ^ 6;
+hObject.UserData.legend = {};
 
 
 
@@ -150,15 +152,30 @@ fitCases = h.UserData.transformedCases;
 fitDeaths = h.UserData.transformedDeaths;
 alphaBetaVal = [];
 init = [];
+[trueInfected, trueExposed, trueRecovered] = interpolateTrueInfected(fitCases, fitDeaths);
 if (h.UserData.useEntirePop)
-    initGuinea = [h.UserData.nGuinea, fitCases(1), 0];
-    [alphaBetaVal, error] = findOptAlphaBeta(fittedCasesGuinea, initGuinea);
+    init = [h.UserData.nCountry, 0, 0];
+    [alphaBetaVal, error] = findOptAlphaBeta(trueInfected, trueExposed, init);
 else
     pop = str2double(get(handles.TotalPopulation, 'String'));
-    initGuinea = [pop, fitCases(1), 0];
-    [alphaBetaVal, error] = findOptAlphaBeta(fittedCasesGuinea, initGuinea);
+    init = [pop, 1, 0];
+    [trueInfected, trueExposed, trueRecovered] = interpolateTrueInfected(h.UserData.transformedCases, h.UserData.transformedDeaths);
+    [alphaBetaVal, error] = findOptAlphaBeta(trueInfected, trueRecovered, init);
 end
-[t, x] = instantiateSIR(alphaBetaVal(1),alphaBetaVal(2), init, length(dataInfected));
+[t, x] = instantiateSIR(alphaBetaVal(1),alphaBetaVal(2), init, length(fitCases));
+integratedExpectedInfected = zeros(length(x(:,2)), 1); %% initialize
+for i =  1:length(x)
+    integratedExpectedInfected(i) = trapz(x(1:i,2)); %%get a slowly expanding integration
+end
+plot(handles.axes1, t, integratedExpectedInfected);
+hold on;
+h.UserData.legend = [h.UserData.legend, {'Cummulative SIR Modeled Infected'}];
+legend(handles.axes1, h.UserData.legend);
+
+set(handles.Alpha, 'String', ['SIR Alpha:', num2str(alphaBetaVal(1))]);
+set(handles.Beta, 'String', ['SIR Beta:', num2str(alphaBetaVal(2))]);
+set(handles.Error, 'String', ['SIR Error:', num2str(error)]);
+
 
 
 % hObject    handle to GraphSIR (see GCBO)
@@ -187,13 +204,13 @@ currAxes = findobj('Tag', 'axes1');
 
     disp(length(h.UserData.DaysSinceStart));
     disp(length(h.UserData.rawCases));
-    hold off;
     plot(handles.axes1, h.UserData.DaysSinceStart, h.UserData.rawCases);
     hold on;
     plot(handles.axes1, h.UserData.DaysSinceStart, h.UserData.rawDeaths);
     xlabel(handles.axes1, 'Days Since Start');
     ylabel(handles.axes1, 'Individuals');
-    legend('Raw Cases', 'Raw Deaths');
+    h.UserData.legend = [h.UserData.legend, {'Raw Cases', 'Raw Deaths'}];
+    legend(h.UserData.legend);
     title(['Current Country:' h.UserData.currentCountry]);
 
 
@@ -207,21 +224,27 @@ h = handles.output;
 h.UserData.currentCountry = newCountry;
 disp(newCountry);
 cla(findobj('Tag','axes1'));
+legend(handles.axes1, {});
+h.UserData.legend = {};
 if (strcmp(newCountry, 'Guinea'))
     h.UserData.rawCases = h.UserData.TotalCasesGuinea;
     h.UserData.rawDeaths = h.UserData.TotalDeathsGuinea;
+    h.UserData.nCountry = h.UserData.nGuinea;
 end
 if (strcmp(newCountry, 'Sierra Leone'))
     h.UserData.rawCases = h.UserData.TotalCasesSierraLeone;
     h.UserData.rawDeaths = h.UserData.TotalDeathsSierraLeone;
+    h.UserData.nCountry = h.UserData.nSierraLeone;
 end
 if (strcmp(newCountry, 'Liberia'))
     h.UserData.rawCases = h.UserData.TotalCasesLiberia;
     h.UserData.rawDeaths = h.UserData.TotalDeathsLiberia;
+    h.UserData.nCountry = h.UserData.nLiberia;
 end
-    [fitCases, fitDeaths] = fitData(h.UserData.rawCases, h.UserData.rawDeaths, h.UserData.DaysSinceStart);
-    hObject.UserData.transformedCases = fitCases;
-    hObject.UserData.transformedDeaths = fitDeaths;
+[fitCases, fitDeaths] = fitData(h.UserData.transformedCases, h.UserData.transformedDeaths, h.UserData.DaysSinceStart);
+h.UserData.transformedCases = fitCases;
+h.UserData.transformedDeaths = fitDeaths;
+    
 
 
 % --- Executes on button press in radiobutton2.
@@ -252,18 +275,18 @@ function radiobutton4_Callback(hObject, eventdata, handles)
 
 
 
-function edit3_Callback(hObject, eventdata, handles)
-% hObject    handle to edit3 (see GCBO)
+function TotalPopulation_Callback(hObject, eventdata, handles)
+% hObject    handle to TotalPopulation (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 
-% Hints: get(hObject,'String') returns contents of edit3 as text
-%        str2double(get(hObject,'String')) returns contents of edit3 as a double
+% Hints: get(hObject,'String') returns contents of TotalPopulation as text
+%        str2double(get(hObject,'String')) returns contents of TotalPopulation as a double
 
 
 % --- Executes during object creation, after setting all properties.
-function edit3_CreateFcn(hObject, eventdata, handles)
-% hObject    handle to edit3 (see GCBO)
+function TotalPopulation_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to TotalPopulation (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    empty - handles not created until after all CreateFcns called
 
@@ -288,7 +311,7 @@ function GraphFitData_Callback(hObject, eventdata, handles)
 % hObject    handle to GraphFitData (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
-h = EbolaModeling;
+h = handles.output;
 plot(handles.axes1, h.UserData.transformedCases);
 plot(handles.axes1, h.UserData.transformedDeaths);
 
@@ -299,6 +322,7 @@ function ClearGraph_Callback(hObject, eventdata, handles)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
 cla(handles.axes1);
+h.UserData.legend = {};
 
 
 % --- Executes on button press in radiobutton6.
@@ -308,12 +332,40 @@ function radiobutton6_Callback(hObject, eventdata, handles)
 % handles    structure with handles and user data (see GUIDATA)
 
 % Hint: get(hObject,'Value') returns toggle state of radiobutton6
-h = EbolaModeling;
+h = handles.output;
 h.UserData.useEntirePop = get(hObject, 'Value');
 
 
 % --- Executes on button press in pushbutton5.
 function pushbutton5_Callback(hObject, eventdata, handles)
 % hObject    handle to pushbutton5 (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --- Executes during object creation, after setting all properties.
+function GraphSIR_CreateFcn(hObject, eventdata, handles)
+% hObject    handle to GraphSIR (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    empty - handles not created until after all CreateFcns called
+
+
+% --- Executes on button press in GraphInterpolatedData.
+function GraphInterpolatedData_Callback(hObject, eventdata, handles)
+% hObject    handle to GraphInterpolatedData (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)
+h = handles.output;
+[trueInfected, trueExposed, trueRecovered] = interpolateTrueInfected(h.UserData.transformedCases, h.UserData.transformedDeaths);
+plot(handles.axes1, trueInfected);
+hold on;
+plot(handles.axes1, trueRecovered);
+h.UserData.legend = [h.UserData.legend, {'Infected at Single Time Point', 'Recovered by Single Time Point'}];
+legend(h.UserData.legend);
+
+
+% --- Executes on button press in GraphSEIR.
+function GraphSEIR_Callback(hObject, eventdata, handles)
+% hObject    handle to GraphSEIR (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)

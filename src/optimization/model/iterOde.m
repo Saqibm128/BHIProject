@@ -12,6 +12,8 @@ x = zeros(maxNum, lengthOfX);
 x(1,:) = init; 
 t = 1:maxNum;
 
+
+
 for i = 2:maxNum
     %returns dX
     splitInterval = 1.0/numSplits;

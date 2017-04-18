@@ -1,16 +1,11 @@
-function errorVal = errorSEIRCumm(a, dataInfected, init)
-%%an error function that does not depend on interpolating who is infected
-%%at any given time
-dSEIR = @(t, SEIR) SEIRModel(t, SEIR, a(1), a(2), a(3));
-instantiateSEIR = @(alpha, beta, gamma, num) iterOde(SEIRModel, init, num, 10);
-
-[t, x] = instantiateSEIR(a(1), a(2), a(3), length(dataInfected));
-
-expectedInfected = x(:,3);
-    integratedExpectedInfected = zeros(length(x), 1); %% initialize
-    for i =  1:length(x)
-      integratedExpectedInfected(i) = trapz(expectedInfected(1:i)); %%get a slowly expanding integration
-    end
-    errorValI = sum((integratedExpectedInfected - dataInfected) .^ 2);
-    errorVal = errorValI;
+function errorVal = errorSEIR(a, dataExposed, dataInfected, dataRecovered, initSEIR)
+%ERRORSEIR Summary of this function goes here
+%   Detailed explanation goes here
+numToGen = length(dataInfected);
+[t, x] = instantiateSEIR(a(1), a(2), a(3), initSEIR, numToGen);
+errorValE = sum((x(:, 2) - dataExposed) .^ 2);
+errorValI = sum((x(:, 3) - dataInfected) .^ 2);
+errorValR = sum((x(:, 4) - dataRecovered) .^ 2);
+errorVal = errorValI + errorValR + errorValE;
 end
+

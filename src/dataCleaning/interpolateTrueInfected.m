@@ -49,7 +49,7 @@ for j = (i + summedII + 1):length(cummulativeInfected)
     
     %%TODO find a way to incorporate death into trueExposed statistic, as
     %%well as prevent it from being so forward leaning
-    trueRecovered(i) = cummulativeInfected(i) - trueInfected(i);
+    trueRecovered(j) = cummulativeInfected(j) - trueInfected(j);
     %%num recovered is total who were ever infected - number who are
     %%infected now
     %%assume dead is another word for infected @TODO:dont assume this
