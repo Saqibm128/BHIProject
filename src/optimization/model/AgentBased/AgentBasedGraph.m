@@ -1,9 +1,27 @@
-function [infected, recovered] = AgentBasedGraph(numPeople, numInfected, numConnections, numTimeSteps, infectiousConst, recoveryConst) 
+function [infected, recovered] = AgentBasedGraph(country, numPeople, numInfected, numConnections, numTimeSteps, infectiousConst, recoveryConst) 
 
 %%initialize variables
 people = zeros(numPeople, numConnections + 2);
 infected = zeros(numTimeSteps, 1);
 recovered = zeros(numTimeSteps, 1);
+
+% districts = getDistrictInfo(country);
+% districtThresh = zeros(length(fieldnames(districts)),1);
+% 
+% 
+% for i = 1:length(fieldnames(districts))
+%     fields = fieldnames(districts);
+%     d = districts.(genvarname(fields{i}));
+%     a = districts.(genvarname(fields{i})).population;
+%     if (i == 1)
+%         districtThresh = a;
+%     else
+%         districtThresh = districtThresh(i - 1) + a;
+%     end
+% end
+% 
+% districtThresh = districtThresh ./ districtThresh(end);
+
 
 %%assign people as infected
 chosenInfected = randperm(numPeople, numInfected);
@@ -12,6 +30,7 @@ people(chosenInfected, 1) = 1;
 % 0 is uninfected
 % 1 is infected
 % 2 is recovered
+%%
 
 %%instantiate random connections
 for i = 1:numPeople
@@ -44,7 +63,7 @@ for t = 1:numTimeSteps
         if (people(j, 1) == 1)
             infected(t) = infected(t) + 1;
         end
-        if (people(j, 2) == 1)
+        if (people(j, 1) == 2)
             recovered(t) = recovered(t) + 1;
         end
     end

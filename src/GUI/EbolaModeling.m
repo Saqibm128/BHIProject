@@ -406,3 +406,23 @@ function GraphAgentBasedModel_Callback(hObject, eventdata, handles)
 % hObject    handle to GraphAgentBasedModel (see GCBO)
 % eventdata  reserved - to be defined in a future version of MATLAB
 % handles    structure with handles and user data (see GUIDATA)
+h = handles.output;
+fitCases = h.UserData.transformedCases;
+fitDeaths = h.UserData.transformedDeaths;
+resVal = [];
+init = [];
+[trueInfected, trueExposed, trueRecovered] = interpolateTrueInfected(fitCases, fitDeaths);
+if (h.UserData.useEntirePop)
+    init = [1, h.UserData.nCountry, 1, 10];
+    [resVal, error] = findOptAgentBased(trueInfected, trueRecovered, init);
+else
+    pop = str2double(get(handles.TotalPopulation, 'String'));
+    init = [1, pop, pop/1000, 10];
+    [trueInfected, trueExposed, trueRecovered] = interpolateTrueInfected(h.UserData.transformedCases, h.UserData.transformedDeaths);
+    [resVal, error] = findOptAgentBased(trueInfected, trueRecovered, init);
+end
+[infected, recovered] = AgentBasedGraph(init(1), init(2), init(3), init(4), length(h.UserData.transformedCases), resVal(1), resVal(2));
+plot(handles.axes1, infected);
+h.UserData.legend = [h.UserData.legend, {'Agent Modeled Infected'}];
+set(handles.Error, 'String', ['Agent-Based Error:', num2str(error)]);
+

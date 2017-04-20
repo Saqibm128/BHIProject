@@ -1,9 +1,0 @@
-function districts = getDistrictInfo()
-%% districts is a data structure which represents info about West Africa Pop
-%% 
-
-districts = struct;
-districts.Kindia = struct;
-districts.Kindia.population = 181,126;
-districts.Kindia.point = 181,126;
-districts.Boke = stru
