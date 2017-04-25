@@ -1,6 +1,6 @@
 function districts = getDistrictInfo(countryChoice)
 %% districts is a data structure which represents info about West Africa Pop
-%% countryChoice 1 if Guinea, 2 if Sierra Leone, 3 if Liberia
+%% countryChoice 1 if Guinea, 2 if Sierra Leone, 3 if Liberia,
 
 districts = struct;
 if countryChoice == 1
@@ -112,6 +112,7 @@ else
     end
 end
 
+% validates districts struct before we send it out
 for i = 1:length(fieldnames(districts))
     fields = fieldnames(districts);
     d = districts.(genvarname(fields{i}));

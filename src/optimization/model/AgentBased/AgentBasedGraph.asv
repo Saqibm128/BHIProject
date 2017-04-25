@@ -1,14 +1,11 @@
 function [infected, recovered] = AgentBasedGraph(country, numPeople, numInfected, numConnections, numTimeSteps, infectiousConst, recoveryConst) 
 
 %%initialize variables
-people = zeros(numPeople, numConnections + 2); %% adjacency list of graph
-% first column is status, 1 if infected, 2 if recovered
-% second column is location
-% all other columns are the actual adjacency list (index based)
-infected = zeros(numTimeSteps, 1); % preallocate array to hold infected quantities of individuals over time
-recovered = zeros(numTimeSteps, 1); % preallocate array to hold recovered quantities of individuals over time
+people = zeros(numPeople, numConnections + 2);
+infected = zeros(numTimeSteps, 1);
+recovered = zeros(numTimeSteps, 1);
 
-%% assign numOfCountry variable
+
 numOfCountry = 0;
 if (strcmp(country, 'Guinea') == 0)
     numOfCountry = 1;
@@ -22,7 +19,7 @@ else
     end
 end
 
-districts = getDistrictInfo(numOfCountry);
+% districts = getDistrictInfo(country);
 % districtThresh = zeros(length(fieldnames(districts)),1);
 % 
 % 
