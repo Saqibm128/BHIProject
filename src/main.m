@@ -13,6 +13,11 @@ nSierraLeone = 30000;
 [fittedCases, fittedDeaths, casesError, deathsError] = readData(false);
 fittedCasesGuinea = (fittedCases(:,1));
 fittedDeathsGuinea = (fittedDeaths(:,1));
+fittedCasesLiberia = fittedCases(:, 2);
+fittedDeathsLiberia = fittedDeaths(:, 2);
+fittedCasesSierraLeone = fittedCases(:, 3);
+fittedDeathsSierraLeone = fittedDeaths(:, 3);
+
 
 [trueInfected, trueExposed, trueRecovered] = interpolateTrueInfected(fittedCasesGuinea, fittedDeathsGuinea);
 
@@ -36,8 +41,10 @@ disp(error)
 %Sierra Leone
 %[trueInfected, trueExposed, trueRecovered] = interpolateTrueInfected(fittedCases(:, 3), fittedDeaths(:, 3));
 
+
+
 init = [nSierraLeone, 1, 0];
-[trueInfected, trueExposed, trueRecovered] = interpolateTrueInfected(fittedSierraLeone, fittedDeathsSierraLeone);
+[trueInfected, trueExposed, trueRecovered] = interpolateTrueInfected(fittedCasesSierraLeone, fittedDeathsSierraLeone);
 [alphaBetaVal, error] = findOptAlphaBeta(trueInfected, trueExposed, init);
 disp('alpha Sierra Leone, beta Sierra Leone')
 disp(alphaBetaVal)
