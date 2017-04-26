@@ -3,7 +3,7 @@
         alpha = a;
         beta = b;
         instSirModel = @(t, x)SIRModel(t, x, a, b); %instantiated Sir model
-        [time, vals] = iterOde(instSirModel, init, num, 3);
+        [time, vals] = iterOde(instSirModel, init, num, 12);
         t = time;
         x = vals;
     end

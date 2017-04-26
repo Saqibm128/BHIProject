@@ -154,18 +154,18 @@ alphaBetaVal = [];
 init = [];
 [trueInfected, trueExposed, trueRecovered] = interpolateTrueInfected(fitCases, fitDeaths);
 if (h.UserData.useEntirePop)
-    init = [h.UserData.nCountry, 0, 0];
+    init = h.UserData.nCountry;
     [alphaBetaVal, error] = findOptAlphaBeta(trueInfected, trueRecovered, init);
 else
     pop = str2double(get(handles.TotalPopulation, 'String'));
-    init = [pop, 1, 0];
+    init = pop;
     [trueInfected, trueExposed, trueRecovered] = interpolateTrueInfected(h.UserData.transformedCases, h.UserData.transformedDeaths);
     [alphaBetaVal, error] = findOptAlphaBeta(trueInfected, trueRecovered, init);
 end
-[t, x] = instantiateSIR(alphaBetaVal(1),alphaBetaVal(2), init, length(fitCases));
+[t, x] = instantiateSIR(alphaBetaVal(1),alphaBetaVal(2), [init, 1, 0], length(fitCases));
 integratedExpectedInfected = zeros(length(x(:,2)), 1); %% initialize
 for i =  1:length(x)
-    integratedExpectedInfected(i) = trapz(x(1:i,2)); %%get a slowly expanding integration
+    integratedExpectedInfected(i) = trapz(x(1:i,2)); %%get a slowly expanding integration, since we should compare cummulative infected real to modeled
 end
 plot(handles.axes1, t, integratedExpectedInfected);
 hold on;
@@ -186,7 +186,7 @@ set(handles.Error, 'String', ['SIR Error:', num2str(error)]);
 % --- Executes on key press with focus on GraphSIR and none of its controls.
 function GraphSIR_KeyPressFcn(hObject, eventdata, handles)
 
-% hObject    handle to GraphSIR (see GCBO)
+% hObject    handle t   nb  n n  n n o GraphSIR (see GCBO)
 % eventdata  structure with the following fields (see MATLAB.UI.CONTROL.UICONTROL)
 %	Key: name of the key that was pressed, in lower case
 %	Character: character interpretation of the key(s) that was pressed
@@ -372,6 +372,7 @@ function GraphSEIR_Callback(hObject, eventdata, handles)
 h = handles.output;
 fitCases = h.UserData.transformedCases;
 fitDeaths = h.UserData.transformedDeaths;
+%initialize data
 betaEpsGamVal = [];
 init = [];
 [trueInfected, trueExposed, trueRecovered] = interpolateTrueInfected(fitCases, fitDeaths);
@@ -413,7 +414,7 @@ resVal = [];
 init = [];
 [trueInfected, trueExposed, trueRecovered] = interpolateTrueInfected(fitCases, fitDeaths);
 if (h.UserData.useEntirePop)
-    init = [1, h.UserData.nCountry, 1, 10];
+    init = [{h.UserData.currentCountry}, h.UserData.nCountry, 1, 10];
     [resVal, error] = findOptAgentBased(trueInfected, trueRecovered, init);
 else
     pop = str2double(get(handles.TotalPopulation, 'String'));

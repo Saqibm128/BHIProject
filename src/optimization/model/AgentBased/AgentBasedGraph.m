@@ -1,5 +1,9 @@
 function [infected, recovered] = AgentBasedGraph(country, numPeople, numInfected, numConnections, numTimeSteps, infectiousConst, recoveryConst) 
 
+if (iscell(country)) 
+    country = country{0};
+end
+
 %%initialize variables
 people = zeros(numPeople, numConnections + 2); %% adjacency list of graph
 % first column is status, 1 if infected, 2 if recovered
@@ -23,26 +27,41 @@ else
 end
 
 districts = getDistrictInfo(numOfCountry);
-% districtThresh = zeros(length(fieldnames(districts)),1);
-% 
-% 
-% for i = 1:length(fieldnames(districts))
-%     fields = fieldnames(districts);
-%     d = districts.(genvarname(fields{i}));
-%     a = districts.(genvarname(fields{i})).population;
-%     if (i == 1)
-%         districtThresh = a;
-%     else
-%         districtThresh = districtThresh(i - 1) + a;
-%     end
-% end
-% 
-% districtThresh = districtThresh ./ districtThresh(end);
+districtThresh = zeros(length(fieldnames(districts)),1);
 
+fields = fieldnames(districts);
+for i = 1:length(fieldnames(districts))
+    d = districts.(matlab.lang.makeValidName(fields{i}));
+    a = districts.(matlab.lang.makeValidName(fields{i})).population;
+    districts.(matlab.lang.makeValidName(fields{i})).inhabitants = [];
+    if (i == 1)
+        districtThresh(1) = a;
+    else
+        districtThresh(i) = districtThresh(i - 1) + a;
+    end
+end
+
+districtThresh = districtThresh ./ districtThresh(end);
+
+%%assign locations within Country
+
+for i = 1:numPeople
+    locationDeterminer = rand();
+    location = -1; %%not defined
+    for j = 1:length(districtThresh)
+        if districtThresh(j) > locationDeterminer %%works since the thresholds to decide people are increasing over time
+            location = j; %%location is defined
+            break;
+        end
+    end
+    inhabitants = districts.(matlab.lang.makeValidName(fields{location})).inhabitants;
+    districts.(matlab.lang.makeValidName(fields{location})).inhabitants = [inhabitants, i]; %%add new person to inhabitants
+    people(i, 2) = location; %% set up person's location
+end
 
 %%assign people as infected
-chosenInfected = randperm(numPeople, numInfected);
-people(chosenInfected, 1) = 1;
+currentlyInfected = randperm(numPeople, numInfected);
+people(currentlyInfected, 1) = 1;
 
 % 0 is uninfected
 % 1 is infected
@@ -52,12 +71,22 @@ people(chosenInfected, 1) = 1;
 %%instantiate random connections
 for i = 1:numPeople
     for j = 1:numConnections
-        people(i,j + 2) = randi(numPeople);
+        location = people(i, 2);
+        neighbors = districts.(matlab.lang.makeValidName(fields{location})).neighbors;
+        %%TODO: pick a more formal way of choosing neighbors
+        neighbors = [neighbors fields{location}]; %%can connect to within district as well
+        chosenNeighbor = neighbors{randi(length(neighbors))};
+        if (isnumeric(chosenNeighbor))
+            disp('whoops');
+        end
+        chosenNeighborInhabitants = districts.(matlab.lang.makeValidName(chosenNeighbor)).inhabitants;
+        people(i,j + 2) = chosenNeighborInhabitants(randi(length(chosenNeighborInhabitants)));
     end
 end
 
+
 for t = 1:numTimeSteps
-    for j = 1:numPeople
+    for j = currentlyInfected
         isInfected = (people(j, 1) == 1);
         for e = 1:numConnections
             edge = people(j, e + 2);
@@ -66,6 +95,7 @@ for t = 1:numTimeSteps
                     if rand < infectiousConst
                         % when contacting person is infectious, other person isn't recovered, and probability
                         people(edge, 1) = 1;
+                        currentlyInfected = [currentlyInfected edge];
                     end
                 end
             end
@@ -73,9 +103,11 @@ for t = 1:numTimeSteps
         % should person recover now?
         if rand < recoveryConst && isInfected
             people(j, 1) = 2;
+            currentlyInfected(currentlyInfected == j) = []; %% we remove the currently infected person who just recovered
         end
     end
     % go measure people list
+    % TODo: make this more efficient
     for j = 1:numPeople
         if (people(j, 1) == 1)
             infected(t) = infected(t) + 1;
@@ -84,8 +116,18 @@ for t = 1:numTimeSteps
             recovered(t) = recovered(t) + 1;
         end
     end
+    
+    %%simple check for efficiency ... don't waste time on model that
+    %%clearly cannot converge
+    if (length(currentlyInfected) > 1000) %%it was never the case that more than 1000 cases occurred at any single time
+        break;
+    end
 end
 
+while (length(infected) < numTimeSteps) %%since we broke early as this model clearly failed
+    infected = [infected repelem(numPeople, numTimeSteps - length(infected))]; %% assume we failed to converge, everyone sick
+    recovered = [recovered repelem(numPeople, numTimeSteps - length(infected))];
+end
 
 
 
