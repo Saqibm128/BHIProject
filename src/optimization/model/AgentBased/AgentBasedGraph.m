@@ -27,6 +27,8 @@ else
 end
 
 districts = getDistrictInfo(numOfCountry);
+
+%%create districtThresh to help allocate population among districts
 districtThresh = zeros(length(fieldnames(districts)),1);
 
 fields = fieldnames(districts);
@@ -46,7 +48,7 @@ districtThresh = districtThresh ./ districtThresh(end);
 %%assign locations within Country
 
 for i = 1:numPeople
-    locationDeterminer = rand();
+    locationDeterminer = i/numPeople;
     location = -1; %%not defined
     for j = 1:length(districtThresh)
         if districtThresh(j) > locationDeterminer %%works since the thresholds to decide people are increasing over time
@@ -75,11 +77,12 @@ for i = 1:numPeople
         neighbors = districts.(matlab.lang.makeValidName(fields{location})).neighbors;
         %%TODO: pick a more formal way of choosing neighbors
         neighbors = [neighbors fields{location}]; %%can connect to within district as well
-        chosenNeighbor = neighbors{randi(length(neighbors))};
-        if (isnumeric(chosenNeighbor))
-            disp('whoops');
+        chosenNeighborLength = 0;
+        while chosenNeighborLength == 0 %%deal with edge case where one of the neighbors are uninhabited
+            chosenNeighbor = neighbors{randi(length(neighbors))};
+            chosenNeighborInhabitants = districts.(matlab.lang.makeValidName(chosenNeighbor)).inhabitants;
+            chosenNeighborLength = length(chosenNeighborInhabitants);
         end
-        chosenNeighborInhabitants = districts.(matlab.lang.makeValidName(chosenNeighbor)).inhabitants;
         people(i,j + 2) = chosenNeighborInhabitants(randi(length(chosenNeighborInhabitants)));
     end
 end
