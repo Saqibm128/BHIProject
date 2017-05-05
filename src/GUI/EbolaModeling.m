@@ -23,7 +23,7 @@ function varargout = EbolaModeling(varargin)
 
 % Edit the above text to modify the response to help EbolaModeling
 
-% Last Modified by GUIDE v2.5 18-Apr-2017 16:45:54
+% Last Modified by GUIDE v2.5 27-Apr-2017 21:17:42
 
 % Begin initialization code - DO NOT EDIT
 gui_Singleton = 1;
@@ -74,6 +74,7 @@ hObject.UserData.nLiberia = 4.3 * 10 ^ 6;
 hObject.UserData.nSierraLeone = 6.092 * 10 ^ 6;
 hObject.UserData.nCountry = 11.75 * 10 ^ 6;
 hObject.UserData.legend = {};
+hold on;
 
 
 
@@ -163,13 +164,21 @@ else
     [alphaBetaVal, error] = findOptAlphaBeta(trueInfected, trueRecovered, init);
 end
 [t, x] = instantiateSIR(alphaBetaVal(1),alphaBetaVal(2), [init, 1, 0], length(fitCases));
-integratedExpectedInfected = zeros(length(x(:,2)), 1); %% initialize
-for i =  1:length(x)
-    integratedExpectedInfected(i) = trapz(x(1:i,2)); %%get a slowly expanding integration, since we should compare cummulative infected real to modeled
-end
-plot(handles.axes1, t, integratedExpectedInfected);
-hold on;
-h.UserData.legend = [h.UserData.legend, {'Cummulative SIR Modeled Infected'}];
+% integratedExpectedInfected = zeros(length(x(:,2)), 1); %% initialize
+%% Giving up on trying to find cummulative cases from data below
+% for i =  1:length(x)
+%     %%reason we do integration here is we want a model that looks back at
+%     %%the exact raw data. Dont want to compare back to fitted data or to
+%     %%interpolated data
+%     integratedExpectedInfected(i) = trapz(x(1:i,2)); %%get a slowly expanding integration, since we should compare cummulative infected real to modeled
+%     %%analysis of graph suggests that since infected people carry over from
+%     %%one day to another until they recover, that this integraiton may
+%     %%overcount. 
+%     %%(TODO: figure out actual way to deal with the issue)
+% end
+plot(handles.axes1, t, x(:,2));
+plot(handles.axes1, t, x(:,3));
+h.UserData.legend = [h.UserData.legend, {'Single Point SIR Modeled Infected'}, {'Cummulative SIR Modeled Recovered'}];
 legend(handles.axes1, h.UserData.legend);
 
 set(handles.Alpha, 'String', ['SIR Alpha:', num2str(alphaBetaVal(1))]);
@@ -314,6 +323,9 @@ function GraphFitData_Callback(hObject, eventdata, handles)
 h = handles.output;
 plot(handles.axes1, h.UserData.transformedCases);
 plot(handles.axes1, h.UserData.transformedDeaths);
+h.UserData.legend = [h.UserData.legend, {'Fitted Infected', 'Fitted Recovered'}];
+legend(handles.axes1, h.UserData.legend);
+
 
 
 % --- Executes on button press in ClearGraph.
@@ -358,7 +370,6 @@ function GraphInterpolatedData_Callback(hObject, eventdata, handles)
 h = handles.output;
 [trueInfected, trueExposed, trueRecovered] = interpolateTrueInfected(h.UserData.transformedCases, h.UserData.transformedDeaths);
 plot(handles.axes1, trueInfected);
-hold on;
 plot(handles.axes1, trueRecovered);
 h.UserData.legend = [h.UserData.legend, {'Infected at Single Time Point', 'Recovered by Single Time Point'}];
 legend(h.UserData.legend);
@@ -387,12 +398,15 @@ else
 end
 [t, x] = instantiateSEIR(betaEpsGamVal(1),betaEpsGamVal(2),betaEpsGamVal(3), init, length(fitCases));
 integratedExpectedInfected = zeros(length(x(:,3)), 1); %% initialize
-for i =  1:length(x)
-    integratedExpectedInfected(i) = trapz(x(1:i,3)); %%get a slowly expanding integration
-end
-plot(handles.axes1, t, integratedExpectedInfected);
-hold on;
-h.UserData.legend = [h.UserData.legend, {'Cummulative SEIR Modeled Infected'}];
+% Giving up on idea of plotting cummulative cases
+% for i =  1:length(x)
+%     integratedExpectedInfected(i) = trapz(x(1:i,3)); 
+%     %%get a slowly expanding integration (see SIRCallback for more comments)
+% end
+plot(handles.axes1, t, x(:,3));
+plot(handles.axes1, t, x(:,4));
+plot(handles.axes1, t, x(:,2));
+h.UserData.legend = [h.UserData.legend, {'Single Point SEIR Modeled Infected'}, {'Single Point SEIR Modeled Recovered'}, {'Single Point SEIR Modeled Exposed'}];
 legend(handles.axes1, h.UserData.legend);
 
 set(handles.SEIRBeta, 'String', ['SEIR Beta:', num2str(betaEpsGamVal(1))]);
@@ -418,12 +432,37 @@ if (h.UserData.useEntirePop)
     [resVal, error] = findOptAgentBased(trueInfected, trueRecovered, init);
 else
     pop = str2double(get(handles.TotalPopulation, 'String'));
-    init = [1, pop, pop/1000, 10];
+    init = [{h.UserData.currentCountry}, pop, pop/1000, 10];
     [trueInfected, trueExposed, trueRecovered] = interpolateTrueInfected(h.UserData.transformedCases, h.UserData.transformedDeaths);
     [resVal, error] = findOptAgentBased(trueInfected, trueRecovered, init);
 end
 [infected, recovered] = AgentBasedGraph(init(1), init(2), init(3), init(4), length(h.UserData.transformedCases), resVal(1), resVal(2));
-plot(handles.axes1, infected);
-h.UserData.legend = [h.UserData.legend, {'Agent Modeled Infected'}];
+integratedCummulative = zeros(length(infected),1);
+for i = 1:length(infected)
+    integratedCummulative(i) = trapz(infected(1:i));
+    %%See SIR method for comments on why this occurs
+end
+
+plot(handles.axes1, integratedCummulative);
+plot(handles.axes1, recovered);
+h.UserData.legend = [h.UserData.legend, {'Agent Cummulative Modeled Infected'}, {'Agent Cummulative Modeled Recovered'}];
 set(handles.Error, 'String', ['Agent-Based Error:', num2str(error)]);
 
+
+
+% --- Executes on key press with focus on GraphInterpolatedData and none of its controls.
+function GraphInterpolatedData_KeyPressFcn(hObject, eventdata, handles)
+% hObject    handle to GraphInterpolatedData (see GCBO)
+% eventdata  structure with the following fields (see MATLAB.UI.CONTROL.UICONTROL)
+%	Key: name of the key that was pressed, in lower case
+%	Character: character interpretation of the key(s) that was pressed
+%	Modifier: name(s) of the modifier key(s) (i.e., control, shift) pressed
+% handles    structure with handles and user data (see GUIDATA)
+
+
+% --- If Enable == 'on', executes on mouse press in 5 pixel border.
+% --- Otherwise, executes on mouse press in 5 pixel border or over GraphInterpolatedData.
+function GraphInterpolatedData_ButtonDownFcn(hObject, eventdata, handles)
+% hObject    handle to GraphInterpolatedData (see GCBO)
+% eventdata  reserved - to be defined in a future version of MATLAB
+% handles    structure with handles and user data (see GUIDATA)

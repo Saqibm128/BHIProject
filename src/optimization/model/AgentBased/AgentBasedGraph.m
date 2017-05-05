@@ -1,7 +1,28 @@
 function [infected, recovered] = AgentBasedGraph(country, numPeople, numInfected, numConnections, numTimeSteps, infectiousConst, recoveryConst) 
 
 if (iscell(country)) 
-    country = country{0};
+    country = country{1};
+end
+if (iscell(numPeople))
+    numPeople = numPeople{1};
+end
+if (iscell(numConnections))
+    numConnections = numConnections{1};
+end
+if (iscell(numTimeSteps))
+    numTimeSteps = numTimeSteps{1};
+end
+if(iscell(numInfected))
+    numInfected = numInfected{1};
+end
+if(iscell(numPeople))
+    numPeople = numPeople{1};
+end
+if(iscell(infectiousConst))
+    infectiousConst = infectiousConst{1};
+end
+if(iscell(recoveryConst))
+    recoveryConst = recoveryConst{1};
 end
 
 %%initialize variables
@@ -49,7 +70,7 @@ districtThresh = districtThresh ./ districtThresh(end);
 
 for i = 1:numPeople
     locationDeterminer = i/numPeople;
-    location = -1; %%not defined
+    location = length(districtThresh); %%not defined
     for j = 1:length(districtThresh)
         if districtThresh(j) > locationDeterminer %%works since the thresholds to decide people are increasing over time
             location = j; %%location is defined
@@ -62,7 +83,9 @@ for i = 1:numPeople
 end
 
 %%assign people as infected
+
 currentlyInfected = randperm(numPeople, numInfected);
+currentlyRecovered = [];
 people(currentlyInfected, 1) = 1;
 
 % 0 is uninfected
@@ -94,7 +117,7 @@ for t = 1:numTimeSteps
         for e = 1:numConnections
             edge = people(j, e + 2);
             if isInfected
-                if people(edge, 1) ~= 2
+                if people(edge, 1) == 0
                     if rand < infectiousConst
                         % when contacting person is infectious, other person isn't recovered, and probability
                         people(edge, 1) = 1;
@@ -107,24 +130,29 @@ for t = 1:numTimeSteps
         if rand < recoveryConst && isInfected
             people(j, 1) = 2;
             currentlyInfected(currentlyInfected == j) = []; %% we remove the currently infected person who just recovered
+            currentlyRecovered = [currentlyRecovered, j];
         end
     end
     % go measure people list
     % TODo: make this more efficient
-    for j = 1:numPeople
-        if (people(j, 1) == 1)
-            infected(t) = infected(t) + 1;
-        end
-        if (people(j, 1) == 2)
-            recovered(t) = recovered(t) + 1;
-        end
-    end
+    infected(t) = length(currentlyInfected);
+    recovered(t) = length(currentlyRecovered);
+    
+%     this is code for inefficient traversal of entire graph
+%     for j = 1:numPeople
+%         if (people(j, 1) == 1)
+%             infected(t) = infected(t) + 1;
+%         end
+%         if (people(j, 1) == 2)
+%             recovered(t) = recovered(t) + 1;
+%         end
+%     end
     
     %%simple check for efficiency ... don't waste time on model that
-    %%clearly cannot converge
-    if (length(currentlyInfected) > 1000) %%it was never the case that more than 1000 cases occurred at any single time
-        break;
-    end
+    %%clearly cannot converge, but instead infects everyone
+%     if (length(currentlyInfected) > 5000) %%it was never the case that more than 5000 cases occurred at any single time
+%         break;
+%     end
 end
 
 while (length(infected) < numTimeSteps) %%since we broke early as this model clearly failed
